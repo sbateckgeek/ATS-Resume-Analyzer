@@ -39,12 +39,14 @@ const Index = () => {
               <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">How it Works</a>
               <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a>
               <ThemeToggle />
-              <Button variant="outline" className="hover:bg-primary/10">
-                Log in
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90 text-white">
-                Sign up
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="hover:bg-primary/10">
+                  Log in
+                </Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white">
+                  Sign up
+                </Button>
+              </div>
             </div>
           </div>
         </div>
