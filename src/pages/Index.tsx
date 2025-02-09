@@ -1,24 +1,34 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, FileText, Linkedin, MessageSquare, Search } from "lucide-react";
+import {
+  CheckCircle2,
+  FileText,
+  Linkedin,
+  MessageSquare,
+  Search,
+  Github,
+  ArrowRight,
+  Star,
+  Users,
+  Database,
+  Globe
+} from "lucide-react";
 
 const Index = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
+      <nav className="fixed w-full glass z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div className="text-2xl font-bold text-primary">ResumeAI</div>
+            <div className="text-2xl font-bold gradient-text">ResumeAI</div>
             <div className="hidden md:flex space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-primary transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-primary transition-colors">How it Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-primary transition-colors">Pricing</a>
+              <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a>
+              <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">How it Works</a>
+              <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a>
             </div>
-            <Button className="bg-secondary hover:bg-secondary/90 text-white">Get Started</Button>
+            <Button className="bg-primary hover:bg-primary/90 text-white glow">Get Started</Button>
           </div>
         </div>
       </nav>
@@ -26,105 +36,98 @@ const Index = () => {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="container mx-auto text-center">
-          <span className="inline-block animate-fade-down px-3 py-1 text-sm font-semibold text-secondary bg-secondary/10 rounded-full mb-4">
-            AI-Powered Resume Builder
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-up">
-            Land Your Dream Job with
-            <span className="text-secondary"> ATS-Optimized </span>
-            Resumes
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10 text-primary mb-8">
+            <Star className="w-4 h-4" /> AI-Powered Resume Builder
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-up gradient-text">
+            Create ATS-Optimized
+            <br />
+            Resumes with AI
           </h1>
-          <p className="text-xl text-gray-600 mb-8 animate-fade-up max-w-2xl mx-auto">
-            Create professional resumes that pass Applicant Tracking Systems and catch recruiters' attention.
+          <p className="text-xl text-muted-foreground mb-8 animate-fade-up max-w-2xl mx-auto">
+            Build professional resumes that pass Applicant Tracking Systems and help you land your dream job faster.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up">
-            <Button className="bg-secondary hover:bg-secondary/90 text-white px-8 py-6 text-lg">
-              Build Your Resume
+            <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg glow">
+              Start Building <ArrowRight className="ml-2" />
             </Button>
-            <Button variant="outline" className="px-8 py-6 text-lg">
+            <Button variant="outline" className="px-8 py-6 text-lg border-primary/20 hover:bg-primary/10">
               Watch Demo
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-muted">
+      {/* Stats Section */}
+      <section className="py-20 border-y border-muted">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Succeed
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our AI-powered platform provides all the tools you need to create a winning resume
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              {
-                icon: <FileText className="w-8 h-8 text-secondary" />,
-                title: "ATS Optimization",
-                description: "Ensure your resume passes automated screening systems",
-              },
-              {
-                icon: <Search className="w-8 h-8 text-secondary" />,
-                title: "Keyword Analysis",
-                description: "Match your skills with job requirements automatically",
-              },
-              {
-                icon: <Linkedin className="w-8 h-8 text-secondary" />,
-                title: "LinkedIn Integration",
-                description: "Import your professional profile with one click",
-              },
-              {
-                icon: <MessageSquare className="w-8 h-8 text-secondary" />,
-                title: "AI Cover Letters",
-                description: "Generate tailored cover letters instantly",
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
-              >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+              { number: "10K+", label: "Active Users" },
+              { number: "95%", label: "Success Rate" },
+              { number: "24/7", label: "AI Support" },
+              { number: "50+", label: "Templates" },
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">{stat.number}</div>
+                <div className="text-muted-foreground">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it Works */}
-      <section id="how-it-works" className="py-20">
+      {/* Features Grid */}
+      <section id="features" className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            Three Simple Steps to Success
-          </h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
+              Powerful Features
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to create professional, ATS-optimized resumes
+            </p>
+          </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                step: "1",
-                title: "Upload Your Resume",
-                description: "Start with your existing resume or create one from scratch",
+                icon: <Database className="w-8 h-8 text-primary" />,
+                title: "ATS Optimization",
+                description: "Ensure your resume passes automated screening systems",
               },
               {
-                step: "2",
-                title: "AI Analysis",
-                description: "Our AI analyzes and optimizes your resume for ATS compatibility",
+                icon: <Search className="w-8 h-8 text-primary" />,
+                title: "Keyword Analysis",
+                description: "Match your skills with job requirements automatically",
               },
               {
-                step: "3",
-                title: "Get Hired",
-                description: "Apply with confidence using your optimized resume",
+                icon: <Linkedin className="w-8 h-8 text-primary" />,
+                title: "LinkedIn Integration",
+                description: "Import your professional profile with one click",
               },
-            ].map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  {step.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
+              {
+                icon: <MessageSquare className="w-8 h-8 text-primary" />,
+                title: "AI Cover Letters",
+                description: "Generate tailored cover letters instantly",
+              },
+              {
+                icon: <Users className="w-8 h-8 text-primary" />,
+                title: "Expert Review",
+                description: "Get feedback from HR professionals",
+              },
+              {
+                icon: <Globe className="w-8 h-8 text-primary" />,
+                title: "Multi-language",
+                description: "Create resumes in multiple languages",
+              },
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="glass p-6 rounded-xl hover:scale-105 transition-all duration-300"
+              >
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -132,51 +135,54 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary text-white">
+      <section className="py-20 glass">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-8">
             Ready to Land Your Dream Job?
           </h2>
-          <Button className="bg-secondary hover:bg-secondary/90 text-white px-8 py-6 text-lg">
-            Start Building Your Resume
+          <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg glow">
+            Start Building Your Resume <ArrowRight className="ml-2" />
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
+      <footer className="border-t border-muted py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-4">ResumeAI</h3>
-              <p className="text-sm">Building better careers with AI-powered tools</p>
+              <h3 className="text-xl font-bold gradient-text mb-4">ResumeAI</h3>
+              <p className="text-sm text-muted-foreground">Building better careers with AI-powered tools</p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Templates</a></li>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Templates</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-              </ul>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <div className="flex space-x-4">
+                <a href="#" className="text-muted-foreground hover:text-primary">
+                  <Github className="w-6 h-6" />
+                </a>
+                <a href="#" className="text-muted-foreground hover:text-primary">
+                  <Linkedin className="w-6 h-6" />
+                </a>
+              </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+          <div className="border-t border-muted mt-12 pt-8 text-center text-sm text-muted-foreground">
             <p>&copy; 2024 ResumeAI. All rights reserved.</p>
           </div>
         </div>
