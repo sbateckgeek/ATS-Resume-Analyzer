@@ -71,10 +71,15 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "toggle-switch": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(1rem)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-down": "fade-down 0.5s ease-out",
+        "toggle-switch": "toggle-switch 0.2s ease-out",
       },
     },
   },
