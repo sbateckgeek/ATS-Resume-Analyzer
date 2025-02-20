@@ -34,22 +34,26 @@ const Index = () => {
               <Sparkles className="w-8 h-8 text-primary" />
               <div className="text-2xl font-bold gradient-text">CV Master</div>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">About</a>
-              <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a>
-              <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">How it Works</a>
-              <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a>
-              <ThemeToggle />
-              <div className="flex items-center gap-2">
-                <Button variant="outline" className="hover:bg-primary/10">
-                  Log in
-                </Button>
-                <Button className="bg-primary hover:bg-primary/90 text-white">
-                  Sign up
-                </Button>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">About</a>
+                <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a>
+                <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">How it Works</a>
+                <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a>
+                <ThemeToggle />
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" className="hover:bg-primary/10">
+                    Log in
+                  </Button>
+                  <Button className="bg-primary hover:bg-primary/90 text-white">
+                    Sign up
+                  </Button>
+                </div>
+              </div>
+              <div className="block md:hidden">
+                <MobileMenu />
               </div>
             </div>
-            <MobileMenu />
           </div>
           <div className="mt-4 md:mt-2">
             <Breadcrumbs

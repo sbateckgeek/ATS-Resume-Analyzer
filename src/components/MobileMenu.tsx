@@ -8,7 +8,7 @@ const MobileMenu = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="md:hidden">
+        <Button variant="ghost" size="icon" className="block">
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
