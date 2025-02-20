@@ -28,7 +28,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="fixed w-full glass z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-2 sm:px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Sparkles className="w-8 h-8 text-primary" />
@@ -59,7 +59,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-32 pb-20 px-2 sm:px-4">
         <div className="container mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10 text-primary mb-8">
             <Star className="w-4 h-4" /> AI-Powered Resume Builder
@@ -85,7 +85,7 @@ const Index = () => {
 
       {/* Stats Section */}
       <section className="py-20 border-y border-muted">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-2 sm:px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { number: "10K+", label: "Active Users" },
@@ -103,7 +103,7 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-32 px-4">
+      <section id="about" className="py-32 px-2 sm:px-4">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -137,7 +137,7 @@ const Index = () => {
 
       {/* Features Grid */}
       <section id="features" className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-2 sm:px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
               Powerful Features
@@ -193,7 +193,7 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-32 px-4 bg-muted/10">
+      <section id="how-it-works" className="py-32 px-2 sm:px-4 bg-muted/10">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
@@ -241,7 +241,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-32 px-4">
+      <section id="pricing" className="py-32 px-2 sm:px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
@@ -318,7 +318,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-32 px-4 bg-muted/10">
+      <section className="py-32 px-2 sm:px-4 bg-muted/10">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
@@ -367,7 +367,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-32 px-4">
+      <section id="faq" className="py-32 px-2 sm:px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
@@ -405,10 +405,9 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section with enhanced design */}
+      {/* CTA Section */}
       <section className="py-32 glass relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 pointer-events-none" />
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="container mx-auto px-2 sm:px-4 relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-8">
             Ready to Land Your Dream Job?
           </h2>
@@ -426,9 +425,9 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer with Newsletter */}
+      {/* Footer */}
       <footer className="border-t border-muted py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-2 sm:px-4">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
