@@ -1,7 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ThemeToggle";
+import MobileMenu from "@/components/MobileMenu";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import {
   CheckCircle2,
   FileText,
@@ -48,6 +49,15 @@ const Index = () => {
                 </Button>
               </div>
             </div>
+            <MobileMenu />
+          </div>
+          <div className="mt-4 md:mt-2">
+            <Breadcrumbs
+              items={[
+                { label: "Features", href: "#features" },
+                { label: "Current Page" },
+              ]}
+            />
           </div>
         </div>
       </nav>
