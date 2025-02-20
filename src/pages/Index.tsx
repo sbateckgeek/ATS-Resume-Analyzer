@@ -55,14 +55,6 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <div className="mt-4 md:mt-2">
-            <Breadcrumbs
-              items={[
-                { label: "Features", href: "#features" },
-                { label: "Current Page" },
-              ]}
-            />
-          </div>
         </div>
       </nav>
 
