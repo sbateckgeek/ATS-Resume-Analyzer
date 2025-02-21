@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResumeAnalyzer = () => {
   const [resumeText, setResumeText] = useState("");
@@ -19,19 +19,14 @@ const ResumeAnalyzer = () => {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch("/api/analyze-resume", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ resumeText }),
+      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+        body: { resumeText }
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to analyze resume");
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
       setAnalysis(data.analysis);
       toast.success("Resume analysis complete!");
     } catch (error) {
