@@ -1,10 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
@@ -12,7 +14,10 @@ const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
@@ -32,10 +37,11 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Gemini AI
+    console.log('Initializing Gemini AI...');
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
+    console.log('Analyzing resume...');
     const prompt = `
       Analyze this resume and provide feedback on:
       1. ATS Optimization suggestions
@@ -52,6 +58,7 @@ serve(async (req) => {
     const response = await result.response;
     const analysis = response.text();
 
+    console.log('Analysis complete, sending response...');
     return new Response(
       JSON.stringify({ analysis }),
       { 
@@ -61,7 +68,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in analyze-resume function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
