@@ -22,12 +22,14 @@ serve(async (req) => {
 
   try {
     if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set');
+      throw new Error('GEMINI_API_KEY environment variable is not set');
     }
 
-    const { resumeText } = await req.json();
+    // Parse the request body
+    const requestData = await req.json();
+    console.log('Received request with data:', { hasResumeText: !!requestData?.resumeText });
 
-    if (!resumeText) {
+    if (!requestData?.resumeText) {
       return new Response(
         JSON.stringify({ error: 'Resume text is required' }),
         { 
@@ -37,11 +39,13 @@ serve(async (req) => {
       );
     }
 
+    const { resumeText } = requestData;
+
     console.log('Initializing Gemini AI...');
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    console.log('Analyzing resume...');
+    console.log('Creating analysis prompt...');
     const prompt = `
       Analyze this resume and provide feedback on:
       1. ATS Optimization suggestions
@@ -54,11 +58,17 @@ serve(async (req) => {
       ${resumeText}
     `;
 
+    console.log('Sending request to Gemini API...');
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const analysis = response.text();
+    console.log('Received response from Gemini API');
+    
+    if (!result.response) {
+      throw new Error('No response received from Gemini API');
+    }
 
-    console.log('Analysis complete, sending response...');
+    const analysis = result.response.text();
+    console.log('Successfully processed response');
+
     return new Response(
       JSON.stringify({ analysis }),
       { 
@@ -69,8 +79,17 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in analyze-resume function:', error);
+    
+    // Create a user-friendly error message
+    const errorMessage = error instanceof Error 
+      ? error.message
+      : 'An unexpected error occurred while analyzing the resume';
+
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
