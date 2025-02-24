@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const OPENROUTER_API_KEY = "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";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -21,10 +20,6 @@ serve(async (req) => {
   }
 
   try {
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable is not set');
-    }
-
     // Parse the request body
     const requestData = await req.json();
     console.log('Received request with data:', { hasResumeText: !!requestData?.resumeText });
@@ -41,32 +36,58 @@ serve(async (req) => {
 
     const { resumeText } = requestData;
 
-    console.log('Initializing Gemini AI...');
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
     console.log('Creating analysis prompt...');
     const prompt = `
-      Analyze this resume and provide feedback on:
-      1. ATS Optimization suggestions
-      2. Key strengths and weaknesses
-      3. Missing important keywords or sections
-      4. Formatting improvements
-      5. Overall score out of 100
+      Analyze this resume and provide detailed feedback in the following areas:
+      1. ATS Optimization suggestions - Analyze how well the resume would perform in Applicant Tracking Systems
+      2. Key strengths and weaknesses - Identify the standout points and areas for improvement
+      3. Missing important keywords or sections - Point out any crucial missing elements
+      4. Formatting improvements - Suggest ways to enhance the resume's visual structure
+      5. Overall score out of 100 - Provide a numerical score based on all factors
+
+      Please provide specific, actionable feedback for each section.
 
       Resume:
       ${resumeText}
     `;
 
-    console.log('Sending request to Gemini API...');
-    const result = await model.generateContent(prompt);
-    console.log('Received response from Gemini API');
-    
-    if (!result.response) {
-      throw new Error('No response received from Gemini API');
+    console.log('Sending request to OpenRouter API...');
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://lovable.dev',
+        'X-Title': 'Resume Analyzer'
+      },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-r1:free",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert ATS and resume analyzer. Provide detailed, professional feedback on resumes."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`OpenRouter API error: ${JSON.stringify(errorData)}`);
     }
 
-    const analysis = result.response.text();
+    const data = await response.json();
+    console.log('Received response from OpenRouter API');
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('No analysis content received from the API');
+    }
+
+    const analysis = data.choices[0].message.content;
     console.log('Successfully processed response');
 
     return new Response(
@@ -80,7 +101,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in analyze-resume function:', error);
     
-    // Create a user-friendly error message
     const errorMessage = error instanceof Error 
       ? error.message
       : 'An unexpected error occurred while analyzing the resume';
