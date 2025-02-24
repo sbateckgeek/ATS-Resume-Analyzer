@@ -23,12 +23,19 @@ serve(async (req) => {
       throw new Error('No file uploaded');
     }
 
-    // Convert file to base64
+    // Convert file to base64 in chunks to avoid stack overflow
     const arrayBuffer = await file.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    const base64 = btoa(String.fromCharCode.apply(null, Array.from(bytes)));
-    const mimeType = file.type;
-    const dataUrl = `data:${mimeType};base64,${base64}`;
+    const chunks = new Uint8Array(arrayBuffer);
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    let binary = '';
+    
+    for (let i = 0; i < chunks.length; i += chunkSize) {
+      const chunk = chunks.slice(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+    }
+
+    const base64 = btoa(binary);
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
     console.log('Sending file to OpenRouter API for text extraction...');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -60,8 +67,8 @@ serve(async (req) => {
             ]
           }
         ],
-        temperature: 0.1, // Low temperature for more consistent extraction
-        max_tokens: 1500 // Allow for longer resumes
+        temperature: 0.1,
+        max_tokens: 1500
       })
     });
 
