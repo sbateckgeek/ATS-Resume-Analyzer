@@ -77,14 +77,16 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`OpenRouter API error: ${JSON.stringify(errorData)}`);
+      console.error('OpenRouter API error:', errorData);
+      throw new Error('Failed to analyze resume. Please try again.');
     }
 
     const data = await response.json();
     console.log('Received response from OpenRouter API');
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error('No analysis content received from the API');
+      console.error('Invalid response format:', data);
+      throw new Error('Invalid response from analysis service');
     }
 
     const analysis = data.choices[0].message.content;
@@ -101,14 +103,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in analyze-resume function:', error);
     
-    const errorMessage = error instanceof Error 
-      ? error.message
-      : 'An unexpected error occurred while analyzing the resume';
-
     return new Response(
       JSON.stringify({ 
-        error: errorMessage,
-        details: error instanceof Error ? error.stack : String(error)
+        error: 'Failed to analyze resume. Please try again.',
+        details: error instanceof Error ? error.message : String(error)
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

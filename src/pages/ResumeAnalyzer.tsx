@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, Upload, AlertCircle } from "lucide-react";
+import { FileText, Upload, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,20 +19,28 @@ const ResumeAnalyzer = () => {
     }
 
     setIsAnalyzing(true);
+    setAnalysis(null); // Clear previous analysis
+
     try {
       const { data, error } = await supabase.functions.invoke('analyze-resume', {
         body: { resumeText }
       });
 
       if (error) {
-        throw error;
+        console.error("Error analyzing resume:", error);
+        throw new Error(error.message || 'Failed to analyze resume');
+      }
+
+      if (!data?.analysis) {
+        throw new Error('No analysis received from the service');
       }
 
       setAnalysis(data.analysis);
       toast.success("Resume analysis complete!");
     } catch (error) {
-      toast.error("Failed to analyze resume. Please try again.");
       console.error("Error analyzing resume:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to analyze resume. Please try again.");
+      setAnalysis(null);
     } finally {
       setIsAnalyzing(false);
     }
@@ -59,6 +68,7 @@ const ResumeAnalyzer = () => {
               className="min-h-[400px] font-mono"
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
+              disabled={isAnalyzing}
             />
             <Button 
               className="mt-4 w-full"
@@ -66,7 +76,10 @@ const ResumeAnalyzer = () => {
               disabled={isAnalyzing || !resumeText.trim()}
             >
               {isAnalyzing ? (
-                <>Analyzing...</>
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
@@ -88,7 +101,7 @@ const ResumeAnalyzer = () => {
           <CardContent>
             {analysis ? (
               <div className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
+                <div className="p-4 bg-muted rounded-lg whitespace-pre-line">
                   {analysis}
                 </div>
               </div>
