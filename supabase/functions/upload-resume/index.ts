@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
+
+const OPENROUTER_API_KEY = "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";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,33 +23,77 @@ serve(async (req) => {
       throw new Error('No file uploaded');
     }
 
-    // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Extract text from PDF using PDF.js
+    // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
-    const pdfData = new Uint8Array(arrayBuffer);
-    
-    // Convert PDF to text using PDF.js (you'll need to implement this part)
-    const text = ""; // TODO: Implement PDF text extraction
+    const bytes = new Uint8Array(arrayBuffer);
+    const base64 = btoa(String.fromCharCode.apply(null, Array.from(bytes)));
+    const mimeType = file.type;
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+    console.log('Sending file to OpenRouter API for text extraction...');
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://lovable.dev',
+        'X-Title': 'Resume Text Extractor'
+      },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-r1:free",
+        messages: [
+          {
+            role: "system",
+            content: "You are a text extraction assistant. Your job is to extract text content from documents and format it cleanly."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Please extract all text from this document and format it cleanly. Preserve important formatting and structure. Remove any irrelevant elements."
+              },
+              {
+                type: "image_url",
+                image_url: dataUrl
+              }
+            ]
+          }
+        ],
+        temperature: 0.1, // Low temperature for more consistent extraction
+        max_tokens: 1500 // Allow for longer resumes
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenRouter API error:', errorData);
+      throw new Error('Failed to extract text from file');
+    }
+
+    const data = await response.json();
+    console.log('Received response from OpenRouter API');
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('No text content received from the API');
+    }
+
+    const extractedText = data.choices[0].message.content;
+    console.log('Successfully extracted text');
 
     return new Response(
-      JSON.stringify({ text }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ text: extractedText }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
+
   } catch (error) {
+    console.error('Error in upload-resume function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ 
+        error: 'Failed to extract text from file. Please try pasting the text directly.',
+        details: error instanceof Error ? error.message : String(error)
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

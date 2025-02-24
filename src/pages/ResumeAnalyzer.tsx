@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,8 +16,15 @@ const ResumeAnalyzer = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      toast.error('Please upload a PDF file');
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload a PDF or image file (JPEG, PNG, WEBP)');
       return;
     }
 
@@ -32,13 +38,13 @@ const ResumeAnalyzer = () => {
       });
 
       if (error) throw error;
-      if (!data?.text) throw new Error('Failed to extract text from PDF');
+      if (!data?.text) throw new Error('Failed to extract text from file');
 
       setResumeText(data.text);
       await analyzeResume(data.text);
     } catch (error) {
-      console.error('Error uploading PDF:', error);
-      toast.error('Failed to process PDF. Please try pasting the text directly.');
+      console.error('Error uploading file:', error);
+      toast.error('Failed to process file. Please try pasting the text directly.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -85,7 +91,7 @@ const ResumeAnalyzer = () => {
           <CardHeader>
             <CardTitle>Your Resume</CardTitle>
             <CardDescription>
-              Upload a PDF or paste your resume text below
+              Upload a PDF/image or paste your resume text below
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -97,13 +103,13 @@ const ResumeAnalyzer = () => {
                 className="w-full"
               >
                 <FileUp className="mr-2 h-4 w-4" />
-                Upload PDF
+                Upload File
               </Button>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileUpload}
-                accept=".pdf"
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
                 className="hidden"
               />
             </div>
@@ -123,7 +129,7 @@ const ResumeAnalyzer = () => {
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
+                    {resumeText ? 'Analyzing...' : 'Extracting Text...'}
                   </>
                 ) : (
                   <>
@@ -154,7 +160,7 @@ const ResumeAnalyzer = () => {
               <div className="flex flex-col items-center justify-center h-[400px] text-center text-muted-foreground">
                 <AlertCircle className="h-12 w-12 mb-4" />
                 <p>Your resume analysis will appear here</p>
-                <p className="text-sm">Upload a PDF or paste your resume text to get started</p>
+                <p className="text-sm">Upload a PDF or image to get started</p>
               </div>
             )}
           </CardContent>
