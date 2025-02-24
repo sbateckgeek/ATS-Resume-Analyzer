@@ -11,45 +11,22 @@ const corsHeaders = {
 const OPENROUTER_API_KEY = "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";
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse the request body
     const requestData = await req.json();
     console.log('Received request with data:', { hasResumeText: !!requestData?.resumeText });
 
     if (!requestData?.resumeText) {
       return new Response(
         JSON.stringify({ error: 'Resume text is required' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
     const { resumeText } = requestData;
-
-    console.log('Creating analysis prompt...');
-    const prompt = `
-      Analyze this resume and provide detailed feedback in the following areas:
-      1. ATS Optimization suggestions - Analyze how well the resume would perform in Applicant Tracking Systems
-      2. Key strengths and weaknesses - Identify the standout points and areas for improvement
-      3. Missing important keywords or sections - Point out any crucial missing elements
-      4. Formatting improvements - Suggest ways to enhance the resume's visual structure
-      5. Overall score out of 100 - Provide a numerical score based on all factors
-
-      Please provide specific, actionable feedback for each section.
-
-      Resume:
-      ${resumeText}
-    `;
 
     console.log('Sending request to OpenRouter API...');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -65,13 +42,21 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an expert ATS and resume analyzer. Provide detailed, professional feedback on resumes."
+            content: "You are a quick and efficient resume analyzer. Provide concise feedback focusing on key points."
           },
           {
             role: "user",
-            content: prompt
+            content: `Analyze this resume and provide brief feedback in these areas:
+1. ATS Score (/100)
+2. Key missing keywords
+3. Format issues
+4. Quick improvements
+
+Resume: ${resumeText}`
           }
-        ]
+        ],
+        temperature: 0.3, // Lower temperature for more focused responses
+        max_tokens: 500 // Limit response length
       })
     });
 
@@ -94,24 +79,17 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ analysis }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Error in analyze-resume function:', error);
-    
     return new Response(
       JSON.stringify({ 
         error: 'Failed to analyze resume. Please try again.',
         details: error instanceof Error ? error.message : String(error)
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
