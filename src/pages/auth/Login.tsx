@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Icons } from "@/components/icons";
+import { Testimonials } from "@/components/auth/Testimonials";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -36,7 +37,7 @@ export default function LoginPage() {
       if (error) throw error;
 
       toast.success("Logged in successfully!");
-      navigate("/dashboard/resume");
+      navigate("/dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to login");
     } finally {
@@ -46,21 +47,7 @@ export default function LoginPage() {
 
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-        <div className="absolute inset-0 bg-primary" />
-        <div className="relative z-20 flex items-center gap-2">
-          <Icons.sparkles className="h-6 w-6" />
-          <span className="text-lg font-bold">CV Master</span>
-        </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              "CV Master has helped me optimize my resume and land interviews at top tech companies. The AI-powered suggestions are incredibly helpful!"
-            </p>
-            <footer className="text-sm">Sofia Davis</footer>
-          </blockquote>
-        </div>
-      </div>
+      <Testimonials />
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <Card>
