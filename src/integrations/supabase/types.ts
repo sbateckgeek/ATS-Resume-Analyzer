@@ -9,7 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      user_activities: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          archived: boolean | null
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          archived?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          archived?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          email_preferences: Json | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_preferences?: Json | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_preferences?: Json | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          ai_analyses: number | null
+          cover_letters: number | null
+          job_matches: number | null
+          total_resumes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_analyses?: number | null
+          cover_letters?: number | null
+          job_matches?: number | null
+          total_resumes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_analyses?: number | null
+          cover_letters?: number | null
+          job_matches?: number | null
+          total_resumes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
