@@ -6,6 +6,7 @@ import DashboardPage from "./pages/Dashboard";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Signup";
+import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dashboard/resume" element={<ResumeAnalyzer />} />
+        <Route path="/dashboard/settings" element={<SettingsPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/signup" element={<SignupPage />} />
         <Route path="*" element={<NotFound />} />

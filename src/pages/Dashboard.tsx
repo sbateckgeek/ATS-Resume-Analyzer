@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   FileText, 
   BarChart3, 
@@ -9,8 +9,11 @@ import {
   Search,
   Linkedin,
   FileEdit,
-  MenuIcon
+  MenuIcon,
+  Archive,
+  Trash2
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
@@ -19,65 +22,150 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger
+} from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
+
+const navigationItems = [
+  { 
+    icon: FileText, 
+    label: "Resume Analyzer",
+    href: "/dashboard/resume"
+  },
+  { 
+    icon: BarChart3, 
+    label: "Job Description Analyzer",
+    href: "/dashboard/job-analysis"
+  },
+  { 
+    icon: Linkedin, 
+    label: "LinkedIn Sync",
+    href: "/dashboard/linkedin"
+  },
+  { 
+    icon: FileEdit, 
+    label: "Cover Letter Generator",
+    href: "/dashboard/cover-letter"
+  },
+  { 
+    icon: Settings, 
+    label: "Settings",
+    href: "/dashboard/settings"
+  },
+];
 
 const DashboardPage = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [stats, setStats] = useState({
+    total_resumes: 0,
+    ai_analyses: 0,
+    cover_letters: 0,
+    job_matches: 0
+  });
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    {
-      title: "Total Resumes",
-      value: "125",
-      change: "+12.5%",
-      description: "Compared to last month"
-    },
-    {
-      title: "AI Analysis",
-      value: "89",
-      change: "+8.2%",
-      description: "Improvement rate"
-    },
-    {
-      title: "Cover Letters",
-      value: "45",
-      change: "+15.3%",
-      description: "Generation success rate"
-    },
-    {
-      title: "Job Matches",
-      value: "92%",
-      change: "+4.5%",
-      description: "Matching accuracy"
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Load user stats
+      const { data: statsData } = await supabase
+        .from("user_stats")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (statsData) {
+        setStats(statsData);
+      }
+
+      // Load recent activities
+      const { data: activitiesData } = await supabase
+        .from("user_activities")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("archived", false)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (activitiesData) {
+        setActivities(activitiesData);
+      }
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const navigationItems = [
-    { 
-      icon: FileText, 
-      label: "Resume Analyzer",
-      href: "/dashboard/resume"
-    },
-    { 
-      icon: BarChart3, 
-      label: "Job Description Analyzer",
-      href: "/dashboard/job-analysis"
-    },
-    { 
-      icon: Linkedin, 
-      label: "LinkedIn Sync",
-      href: "/dashboard/linkedin"
-    },
-    { 
-      icon: FileEdit, 
-      label: "Cover Letter Generator",
-      href: "/dashboard/cover-letter"
-    },
-    { 
-      icon: Settings, 
-      label: "Settings",
-      href: "/dashboard/settings"
-    },
-  ];
+  const archiveActivity = async (activityId) => {
+    try {
+      const { error } = await supabase
+        .from("user_activities")
+        .update({ archived: true })
+        .eq("id", activityId);
+
+      if (error) throw error;
+
+      setActivities(activities.filter(activity => activity.id !== activityId));
+      toast.success("Activity archived");
+    } catch (error) {
+      console.error("Error archiving activity:", error);
+      toast.error("Failed to archive activity");
+    }
+  };
+
+  const deleteActivity = async (activityId) => {
+    try {
+      const { error } = await supabase
+        .from("user_activities")
+        .delete()
+        .eq("id", activityId);
+
+      if (error) throw error;
+
+      setActivities(activities.filter(activity => activity.id !== activityId));
+      toast.success("Activity deleted");
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      toast.error("Failed to delete activity");
+    }
+  };
+
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case "resume_upload":
+        return <FileText className="h-4 w-4" />;
+      case "ai_analysis":
+        return <BarChart3 className="h-4 w-4" />;
+      case "cover_letter":
+        return <FileEdit className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,29 +252,96 @@ const DashboardPage = () => {
         <main className="container mx-auto p-4 lg:p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back! Here's your overview.</p>
+            <p className="text-muted-foreground">
+              Welcome back! Here's your overview.
+            </p>
           </div>
 
           {/* Stats Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
-              <Card key={stat.title}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-sm text-green-500">{stat.change}</div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Resumes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold">
+                    {stats.total_resumes}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="text-sm text-green-500">
+                    +12.5%
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  From previous month
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  AI Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold">
+                    {stats.ai_analyses}
+                  </div>
+                  <div className="text-sm text-green-500">
+                    +8.2%
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Improvement rate
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Cover Letters
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold">
+                    {stats.cover_letters}
+                  </div>
+                  <div className="text-sm text-green-500">
+                    +15.3%
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Generation success rate
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Job Matches
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold">
+                    {stats.job_matches}
+                  </div>
+                  <div className="text-sm text-green-500">
+                    +4.5%
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Matching accuracy
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Recent Activity */}
@@ -194,13 +349,83 @@ const DashboardPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Your latest resume analysis and updates</CardDescription>
+                <CardDescription>
+                  Your latest resume analysis and updates
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Activity items would go here */}
-                  <p className="text-muted-foreground">No recent activity</p>
-                </div>
+                {loading ? (
+                  <div className="text-center py-4">Loading...</div>
+                ) : activities.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    No recent activity
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {activities.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-4 rounded-lg border"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 rounded-full bg-primary/10">
+                            {getActivityIcon(activity.activity_type)}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {activity.activity_type.replace(/_/g, " ")}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(
+                                new Date(activity.created_at),
+                                "MMM d, yyyy 'at' h:mm a"
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => archiveActivity(activity.id)}
+                          >
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Delete Activity
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this activity?
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteActivity(activity.id)}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
