@@ -22,11 +22,11 @@ const MobileMenu = () => {
           <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors py-2 px-4">How it Works</a>
           <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors py-2 px-4">Pricing</a>
           <div className="mt-4 space-y-2 px-4">
-            <Button variant="outline" className="w-full justify-center">
-              Log in
+            <Button variant="outline" className="w-full justify-center" asChild>
+              <a href="/auth/login">Log in</a>
             </Button>
-            <Button className="w-full justify-center">
-              Sign up
+            <Button className="w-full justify-center" asChild>
+              <a href="/auth/signup">Sign up</a>
             </Button>
           </div>
           <div className="mt-4 px-4">

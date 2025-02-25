@@ -40,11 +40,11 @@ const Index = () => {
                 <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a>
                 <ThemeToggle />
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" className="hover:bg-primary/10">
-                    Log in
+                  <Button variant="outline" className="hover:bg-primary/10" asChild>
+                    <a href="/auth/login">Log in</a>
                   </Button>
-                  <Button className="bg-primary hover:bg-primary/90 text-white">
-                    Sign up
+                  <Button className="bg-primary hover:bg-primary/90 text-white" asChild>
+                    <a href="/auth/signup">Sign up</a>
                   </Button>
                 </div>
               </div>
@@ -71,8 +71,13 @@ const Index = () => {
             Build professional resumes that pass Applicant Tracking Systems and help you land your dream job faster.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up">
-            <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg glow">
-              Start Building <ArrowRight className="ml-2" />
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg glow"
+              asChild
+            >
+              <a href="/dashboard/resume">
+                Start Analyzing <ArrowRight className="ml-2" />
+              </a>
             </Button>
             <Button variant="outline" className="px-8 py-6 text-lg border-primary/20 hover:bg-primary/10">
               Watch Demo
