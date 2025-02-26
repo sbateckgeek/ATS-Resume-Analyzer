@@ -1,40 +1,53 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 
-interface Profile {
-  first_name: string;
-  last_name: string;
-  email_preferences: {
-    notifications: boolean;
-    marketing: boolean;
-  };
-}
+const profileFormSchema = z.object({
+  username: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email.",
+  }),
+  bio: z.string().max(160).optional(),
+  urls: z.array(z.object({
+    value: z.string().url({ message: "Please enter a valid URL." })
+  })).optional()
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<Profile>({
-    first_name: "",
-    last_name: "",
-    email_preferences: {
-      notifications: true,
-      marketing: false
-    }
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      bio: "",
+      urls: [{ value: "" }]
+    },
   });
 
   useEffect(() => {
@@ -54,10 +67,11 @@ export default function SettingsPage() {
 
       if (error) throw error;
       if (data) {
-        setProfile({
-          first_name: data.first_name || "",
-          last_name: data.last_name || "",
-          email_preferences: data.email_preferences as { notifications: boolean; marketing: boolean }
+        form.reset({
+          username: data.username || "",
+          email: user.email || "",
+          bio: data.bio || "",
+          urls: data.urls?.length ? data.urls : [{ value: "" }]
         });
       }
     } catch (error) {
@@ -66,7 +80,7 @@ export default function SettingsPage() {
     }
   };
 
-  const updateProfile = async () => {
+  const onSubmit = async (values: ProfileFormValues) => {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -76,9 +90,9 @@ export default function SettingsPage() {
         .from("user_profiles")
         .upsert({
           id: user.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          email_preferences: profile.email_preferences,
+          username: values.username,
+          bio: values.bio,
+          urls: values.urls,
           updated_at: new Date().toISOString()
         });
 
@@ -92,106 +106,128 @@ export default function SettingsPage() {
     }
   };
 
+  const addUrl = () => {
+    const currentUrls = form.getValues("urls") || [];
+    form.setValue("urls", [...currentUrls, { value: "" }]);
+  };
+
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-          <p className="text-muted-foreground">
-            Manage your account settings and preferences.
-          </p>
-        </div>
-        <Separator />
-        
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-              <CardDescription>
-                Update your personal information.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    value={profile.first_name}
-                    onChange={(e) => setProfile(prev => ({
-                      ...prev,
-                      first_name: e.target.value
-                    }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    value={profile.last_name}
-                    onChange={(e) => setProfile(prev => ({
-                      ...prev,
-                      last_name: e.target.value
-                    }))}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="container max-w-6xl py-10">
+      <div className="space-y-0.5">
+        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">
+          Manage your account settings and set e-mail preferences.
+        </p>
+      </div>
+      <Separator className="my-6" />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Email Preferences</CardTitle>
-              <CardDescription>
-                Manage your email notifications.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="notifications"
-                    checked={profile.email_preferences.notifications}
-                    onCheckedChange={(checked) => setProfile(prev => ({
-                      ...prev,
-                      email_preferences: {
-                        ...prev.email_preferences,
-                        notifications: checked as boolean
-                      }
-                    }))}
-                  />
-                  <Label htmlFor="notifications">
-                    Activity notifications
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="marketing"
-                    checked={profile.email_preferences.marketing}
-                    onCheckedChange={(checked) => setProfile(prev => ({
-                      ...prev,
-                      email_preferences: {
-                        ...prev.email_preferences,
-                        marketing: checked as boolean
-                      }
-                    }))}
-                  />
-                  <Label htmlFor="marketing">
-                    Marketing emails
-                  </Label>
-                </div>
+      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+        <aside className="lg:w-1/5">
+          <SettingsSidebar />
+        </aside>
+        <div className="flex-1 lg:max-w-2xl">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div>
+                <h3 className="text-lg font-medium">Profile</h3>
+                <p className="text-sm text-muted-foreground">
+                  This is how others will see you on the site.
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="shadcn" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="flex justify-end">
-            <Button
-              onClick={updateProfile}
-              disabled={loading}
-            >
-              {loading ? "Saving..." : "Save changes"}
-            </Button>
-          </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Select a verified email to display" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      You can manage verified email addresses in your email settings.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell us a little bit about yourself"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      You can @mention other users and organizations to link to them.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div>
+                <FormLabel>URLs</FormLabel>
+                <FormDescription className="mt-0">
+                  Add links to your website, blog, or social media profiles.
+                </FormDescription>
+                <div className="space-y-3 mt-2">
+                  {form.watch("urls")?.map((_, index) => (
+                    <FormField
+                      key={index}
+                      control={form.control}
+                      name={`urls.${index}.value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="https://example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={addUrl}
+                >
+                  Add URL
+                </Button>
+              </div>
+
+              <Button type="submit" disabled={loading}>
+                {loading ? "Updating..." : "Update profile"}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
