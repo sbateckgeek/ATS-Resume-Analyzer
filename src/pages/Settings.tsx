@@ -16,10 +16,19 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Profile {
+  first_name: string;
+  last_name: string;
+  email_preferences: {
+    notifications: boolean;
+    marketing: boolean;
+  };
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<Profile>({
     first_name: "",
     last_name: "",
     email_preferences: {
@@ -44,7 +53,13 @@ export default function SettingsPage() {
         .single();
 
       if (error) throw error;
-      if (data) setProfile(data);
+      if (data) {
+        setProfile({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          email_preferences: data.email_preferences as { notifications: boolean; marketing: boolean }
+        });
+      }
     } catch (error) {
       toast.error("Error loading profile");
       console.error(error);
@@ -61,7 +76,9 @@ export default function SettingsPage() {
         .from("user_profiles")
         .upsert({
           id: user.id,
-          ...profile,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email_preferences: profile.email_preferences,
           updated_at: new Date().toISOString()
         });
 
