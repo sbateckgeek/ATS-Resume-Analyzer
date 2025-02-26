@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,16 +21,11 @@ import * as z from "zod";
 import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 
 const profileFormSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
   }),
-  email: z.string().email({
-    message: "Please enter a valid email.",
-  }),
-  bio: z.string().max(160).optional(),
-  urls: z.array(z.object({
-    value: z.string().url({ message: "Please enter a valid URL." })
-  })).optional()
+  date_of_birth: z.string().optional(),
+  language: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
@@ -43,10 +37,9 @@ export default function SettingsPage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      username: "",
-      email: "",
-      bio: "",
-      urls: [{ value: "" }]
+      name: "",
+      date_of_birth: "",
+      language: "",
     },
   });
 
@@ -68,10 +61,9 @@ export default function SettingsPage() {
       if (error) throw error;
       if (data) {
         form.reset({
-          username: data.username || "",
-          email: user.email || "",
-          bio: data.bio || "",
-          urls: data.urls?.length ? data.urls : [{ value: "" }]
+          name: data.first_name || "",
+          date_of_birth: data.date_of_birth || "",
+          language: data.language || "",
         });
       }
     } catch (error) {
@@ -90,25 +82,20 @@ export default function SettingsPage() {
         .from("user_profiles")
         .upsert({
           id: user.id,
-          username: values.username,
-          bio: values.bio,
-          urls: values.urls,
+          first_name: values.name,
+          date_of_birth: values.date_of_birth,
+          language: values.language,
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      toast.success("Settings updated successfully");
+      toast.success("Account updated successfully");
     } catch (error) {
-      toast.error("Error updating settings");
+      toast.error("Error updating account");
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const addUrl = () => {
-    const currentUrls = form.getValues("urls") || [];
-    form.setValue("urls", [...currentUrls, { value: "" }]);
   };
 
   return (
@@ -126,26 +113,26 @@ export default function SettingsPage() {
           <SettingsSidebar />
         </aside>
         <div className="flex-1 lg:max-w-2xl">
+          <div>
+            <h3 className="text-lg font-medium">Account</h3>
+            <p className="text-sm text-muted-foreground">
+              Update your account settings. Set your preferred language and timezone.
+            </p>
+          </div>
+          <Separator className="my-6" />
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div>
-                <h3 className="text-lg font-medium">Profile</h3>
-                <p className="text-sm text-muted-foreground">
-                  This is how others will see you on the site.
-                </p>
-              </div>
-              
               <FormField
                 control={form.control}
-                name="username"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input placeholder="Your name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.
+                      This is the name that will be displayed on your profile and in emails.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -154,15 +141,15 @@ export default function SettingsPage() {
 
               <FormField
                 control={form.control}
-                name="email"
+                name="date_of_birth"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Date of birth</FormLabel>
                     <FormControl>
-                      <Input placeholder="Select a verified email to display" {...field} />
+                      <Input type="date" placeholder="Pick a date" {...field} />
                     </FormControl>
                     <FormDescription>
-                      You can manage verified email addresses in your email settings.
+                      Your date of birth is used to calculate your age.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -171,60 +158,23 @@ export default function SettingsPage() {
 
               <FormField
                 control={form.control}
-                name="bio"
+                name="language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio</FormLabel>
+                    <FormLabel>Language</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Tell us a little bit about yourself"
-                        className="resize-none"
-                        {...field}
-                      />
+                      <Input placeholder="Select language" {...field} />
                     </FormControl>
                     <FormDescription>
-                      You can @mention other users and organizations to link to them.
+                      This is the language that will be used in the dashboard.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-              <div>
-                <FormLabel>URLs</FormLabel>
-                <FormDescription className="mt-0">
-                  Add links to your website, blog, or social media profiles.
-                </FormDescription>
-                <div className="space-y-3 mt-2">
-                  {form.watch("urls")?.map((_, index) => (
-                    <FormField
-                      key={index}
-                      control={form.control}
-                      name={`urls.${index}.value`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder="https://example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={addUrl}
-                >
-                  Add URL
-                </Button>
-              </div>
 
               <Button type="submit" disabled={loading}>
-                {loading ? "Updating..." : "Update profile"}
+                {loading ? "Updating..." : "Update account"}
               </Button>
             </form>
           </Form>
