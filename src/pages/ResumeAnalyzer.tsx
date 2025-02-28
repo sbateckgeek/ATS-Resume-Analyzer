@@ -1,21 +1,15 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Upload, Loader2, FileUp, Clipboard, Edit3, PenLine } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { FileText, Upload, AlertCircle, Loader2, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const ResumeAnalyzer = () => {
   const [resumeText, setResumeText] = useState("");
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [jobTitle, setJobTitle] = useState("");
-  const [industry, setIndustry] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,21 +57,12 @@ const ResumeAnalyzer = () => {
       return;
     }
 
-    if (!jobTitle.trim()) {
-      toast.error("Please enter the target job title");
-      return;
-    }
-
     setIsAnalyzing(true);
     setAnalysis(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('analyze-resume', {
-        body: { 
-          resumeText: textToAnalyze,
-          jobTitle,
-          industry 
-        }
+        body: { resumeText: textToAnalyze }
       });
 
       if (error) throw error;
@@ -95,134 +80,91 @@ const ResumeAnalyzer = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
-      {/* Left Panel - Input Section */}
-      <div className="w-[400px] border-r bg-muted/10 p-6 overflow-y-auto">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Resume Analyzer</h2>
-          <p className="text-sm text-muted-foreground">
-            Optimize your resume for ATS and get detailed feedback
-          </p>
-        </div>
-        
-        <Separator className="my-6" />
-        
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <Label>Target Job Title</Label>
-            <Input
-              placeholder="e.g. Software Engineer"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-4">
-            <Label>Industry (Optional)</Label>
-            <Input
-              placeholder="e.g. Technology"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-            />
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-4">
-            <Label className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Resume Content
-            </Label>
-            <Button 
-              variant="outline" 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzing}
-              className="w-full"
-            >
-              <FileUp className="mr-2 h-4 w-4" />
-              Upload Resume
-            </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".pdf,.jpg,.jpeg,.png,.webp"
-              className="hidden"
-            />
-            <p className="text-xs text-muted-foreground text-center">or paste your resume text below</p>
-          </div>
-        </div>
+    <div className="container mx-auto p-4 lg:p-8 space-y-6">
+      <div className="flex items-center gap-2 mb-4">
+        <FileText className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold">Resume Analyzer & ATS Optimizer</h1>
       </div>
 
-      {/* Right Panel - Playground/Output */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Toolbar */}
-        <div className="border-b p-2 flex items-center justify-between bg-muted/5">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <PenLine className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Clipboard className="h-4 w-4 mr-2" />
-              Copy
-            </Button>
-          </div>
-        </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Resume</CardTitle>
+            <CardDescription>
+              Upload a PDF/image or paste your resume text below
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isAnalyzing}
+                className="w-full"
+              >
+                <FileUp className="mr-2 h-4 w-4" />
+                Upload File
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                className="hidden"
+              />
+            </div>
+            <div className="relative">
+              <Textarea
+                placeholder="Or paste your resume text here..."
+                className="min-h-[400px] font-mono"
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                disabled={isAnalyzing}
+              />
+              <Button 
+                className="mt-4 w-full"
+                onClick={() => analyzeResume()}
+                disabled={isAnalyzing || !resumeText.trim()}
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {resumeText ? 'Analyzing...' : 'Extracting Text...'}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Analyze Resume
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Content Area */}
-        <div className="flex-1 grid grid-rows-2 overflow-hidden">
-          {/* Input Editor */}
-          <div className="border-b p-4 overflow-hidden">
-            <Textarea
-              placeholder="Paste your resume text here..."
-              className="min-h-full font-mono text-sm resize-none"
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              disabled={isAnalyzing}
-            />
-          </div>
-
-          {/* Analysis Output */}
-          <div className="p-4 overflow-auto bg-muted/5">
+        <Card>
+          <CardHeader>
+            <CardTitle>ATS Analysis</CardTitle>
+            <CardDescription>
+              AI-powered insights and suggestions for your resume
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             {analysis ? (
               <div className="space-y-4">
-                <div className="prose prose-sm max-w-none">
+                <div className="p-4 bg-muted rounded-lg whitespace-pre-line">
                   {analysis}
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
-                <Edit3 className="h-12 w-12 mb-4" />
-                <p className="text-lg font-medium">No Analysis Yet</p>
-                <p className="text-sm">
-                  Upload a resume or paste your text above to get started
-                </p>
+              <div className="flex flex-col items-center justify-center h-[400px] text-center text-muted-foreground">
+                <AlertCircle className="h-12 w-12 mb-4" />
+                <p>Your resume analysis will appear here</p>
+                <p className="text-sm">Upload a PDF or image to get started</p>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="border-t p-4">
-          <Button 
-            className="w-full"
-            onClick={() => analyzeResume()}
-            disabled={isAnalyzing || !resumeText.trim()}
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Analyze Resume
-              </>
-            )}
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

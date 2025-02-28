@@ -19,6 +19,10 @@ const settingsNavItems = [
     title: "Notifications",
     href: "/dashboard/settings/notifications",
   },
+  {
+    title: "Display",
+    href: "/dashboard/settings/display",
+  },
 ];
 
 export function SettingsSidebar() {
