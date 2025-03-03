@@ -3,12 +3,14 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, Upload, AlertCircle, Loader2, FileUp, Copy, Edit } from "lucide-react";
+import { FileText, Upload, AlertCircle, Loader2, FileUp, Copy, Edit, Anchor } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const ResumeAnalyzer = () => {
   const [resumeText, setResumeText] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [industry, setIndustry] = useState("");
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,27 +37,42 @@ const ResumeAnalyzer = () => {
 
     try {
       setIsAnalyzing(true);
-      const { data, error } = await supabase.functions.invoke('upload-resume', {
-        body: formData
+      toast.info("Uploading and processing your file...");
+      
+      const response = await fetch('https://iknpefaenfjwgueqaosm.supabase.co/functions/v1/upload-resume', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+        }
       });
 
-      if (error) throw error;
-      if (!data?.text) throw new Error('Failed to extract text from file');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Upload response error:', errorData);
+        throw new Error(errorData.error || 'Failed to process file');
+      }
+
+      const data = await response.json();
+      
+      if (!data?.text) {
+        console.error('No text extracted:', data);
+        throw new Error('Failed to extract text from file');
+      }
 
       setResumeText(data.text);
-      await analyzeResume(data.text);
+      toast.success("File processed successfully!");
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Failed to process file. Please try pasting the text directly.');
+      toast.error(error instanceof Error ? error.message : 'Failed to process file. Please try pasting the text directly.');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  const analyzeResume = async (text?: string) => {
-    const textToAnalyze = text || resumeText;
-    if (!textToAnalyze.trim()) {
-      toast.error("Please enter your resume text or upload a PDF");
+  const analyzeResume = async () => {
+    if (!resumeText.trim()) {
+      toast.error("Please enter your resume text or upload a file");
       return;
     }
 
@@ -63,17 +80,31 @@ const ResumeAnalyzer = () => {
     setAnalysis(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-resume', {
-        body: { resumeText: textToAnalyze }
+      toast.info("Analyzing your resume...");
+      
+      const response = await fetch('https://iknpefaenfjwgueqaosm.supabase.co/functions/v1/analyze-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+        },
+        body: JSON.stringify({ 
+          resumeText,
+          jobTitle: jobTitle || undefined,
+          industry: industry || undefined
+        })
       });
 
-      if (error) {
-        console.error("Function invocation error:", error);
-        throw new Error(error.message || 'Failed to analyze resume');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Analysis response error:', errorData);
+        throw new Error(errorData.error || 'Failed to analyze resume');
       }
       
+      const data = await response.json();
+      
       if (!data?.analysis) {
-        console.error("No analysis received:", data);
+        console.error('No analysis received:', data);
         throw new Error('No analysis received from the service');
       }
 
@@ -113,6 +144,31 @@ const ResumeAnalyzer = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Job Title (Optional)</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Frontend Developer"
+                    className="w-full p-2 rounded-md border border-gray-300"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    disabled={isAnalyzing}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Industry (Optional)</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Tech"
+                    className="w-full p-2 rounded-md border border-gray-300"
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    disabled={isAnalyzing}
+                  />
+                </div>
+              </div>
+              
               <Button 
                 variant="outline" 
                 onClick={() => fileInputRef.current?.click()}
@@ -140,7 +196,7 @@ const ResumeAnalyzer = () => {
               </div>
               <Button 
                 className="w-full"
-                onClick={() => analyzeResume()}
+                onClick={analyzeResume}
                 disabled={isAnalyzing || !resumeText.trim()}
               >
                 {isAnalyzing ? (
@@ -150,7 +206,7 @@ const ResumeAnalyzer = () => {
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Anchor className="mr-2 h-4 w-4" />
                     Analyze Resume
                   </>
                 )}
