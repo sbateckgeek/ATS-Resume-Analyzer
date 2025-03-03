@@ -71,7 +71,9 @@ export default function SettingsPage() {
           username: data.username || "",
           email: user.email || "",
           bio: data.bio || "",
-          urls: data.urls?.length ? data.urls : [{ value: "" }]
+          urls: data.urls && Array.isArray(data.urls) && data.urls.length 
+            ? data.urls 
+            : [{ value: "" }]
         });
       }
     } catch (error) {
