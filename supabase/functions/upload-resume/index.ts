@@ -11,6 +11,7 @@ const corsHeaders = {
 const OPENROUTER_API_KEY = "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";
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
