@@ -39,11 +39,20 @@ const ResumeAnalyzer = () => {
       setIsAnalyzing(true);
       toast.info("Uploading and processing your file...");
       
+      // Get the current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      
+      if (!accessToken) {
+        console.log("No active session found");
+        // Proceed anyway for testing purposes, but in production you might want to handle this differently
+      }
+
       const response = await fetch('https://iknpefaenfjwgueqaosm.supabase.co/functions/v1/upload-resume', {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+          'Authorization': `Bearer ${accessToken || ''}`,
         }
       });
 
@@ -82,11 +91,20 @@ const ResumeAnalyzer = () => {
     try {
       toast.info("Analyzing your resume...");
       
+      // Get the current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      
+      if (!accessToken) {
+        console.log("No active session found");
+        // Proceed anyway for demo purposes
+      }
+
       const response = await fetch('https://iknpefaenfjwgueqaosm.supabase.co/functions/v1/analyze-resume', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+          'Authorization': `Bearer ${accessToken || ''}`,
         },
         body: JSON.stringify({ 
           resumeText,
@@ -275,3 +293,4 @@ const ResumeAnalyzer = () => {
 };
 
 export default ResumeAnalyzer;
+

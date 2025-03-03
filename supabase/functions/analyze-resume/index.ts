@@ -17,6 +17,9 @@ serve(async (req) => {
   }
 
   try {
+    // Don't require authentication for now since we're in development
+    // This would normally validate the JWT token from the request
+    
     const requestData = await req.json();
     console.log('Received request with data:', { hasResumeText: !!requestData?.resumeText });
 
@@ -27,7 +30,23 @@ serve(async (req) => {
       );
     }
 
-    const { resumeText } = requestData;
+    const { resumeText, jobTitle, industry } = requestData;
+    let userPrompt = `Analyze this resume and provide brief feedback in these areas:
+1. ATS Score (/100)
+2. Key missing keywords
+3. Format issues
+4. Quick improvements
+
+Resume: ${resumeText}`;
+
+    // Add job title and industry context if provided
+    if (jobTitle) {
+      userPrompt += `\n\nTarget Job Title: ${jobTitle}`;
+    }
+    
+    if (industry) {
+      userPrompt += `\nIndustry: ${industry}`;
+    }
 
     console.log('Sending request to OpenRouter API...');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -47,13 +66,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Analyze this resume and provide brief feedback in these areas:
-1. ATS Score (/100)
-2. Key missing keywords
-3. Format issues
-4. Quick improvements
-
-Resume: ${resumeText}`
+            content: userPrompt
           }
         ],
         temperature: 0.3, // Lower temperature for more focused responses
