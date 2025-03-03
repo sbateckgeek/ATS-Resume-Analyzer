@@ -38,28 +38,37 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          bio: string | null
           created_at: string | null
           email_preferences: Json | null
           first_name: string | null
           id: string
           last_name: string | null
           updated_at: string | null
+          urls: Json | null
+          username: string | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string | null
           email_preferences?: Json | null
           first_name?: string | null
           id: string
           last_name?: string | null
           updated_at?: string | null
+          urls?: Json | null
+          username?: string | null
         }
         Update: {
+          bio?: string | null
           created_at?: string | null
           email_preferences?: Json | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           updated_at?: string | null
+          urls?: Json | null
+          username?: string | null
         }
         Relationships: []
       }
