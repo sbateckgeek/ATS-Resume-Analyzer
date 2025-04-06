@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -67,13 +66,27 @@ export default function SettingsPage() {
 
       if (error) throw error;
       if (data) {
+        let formattedUrls: { value: string }[] = [{ value: "" }];
+        
+        if (data.urls && Array.isArray(data.urls)) {
+          if (data.urls.length > 0) {
+            formattedUrls = data.urls.map((url: any) => {
+              if (typeof url === 'string') {
+                return { value: url };
+              }
+              if (typeof url === 'object' && url !== null && 'value' in url) {
+                return { value: url.value || "" };
+              }
+              return { value: "" };
+            });
+          }
+        }
+
         form.reset({
           username: data.username || "",
           email: user.email || "",
           bio: data.bio || "",
-          urls: data.urls && Array.isArray(data.urls) && data.urls.length 
-            ? data.urls 
-            : [{ value: "" }]
+          urls: formattedUrls
         });
       }
     } catch (error) {
