@@ -4,11 +4,17 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true); // Default to dark mode
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
+    // Check if document is available (client-side)
+    if (typeof window !== "undefined") {
+      // Set initial theme based on HTML class or system preference
+      const isDarkMode = document.documentElement.classList.contains("dark") || 
+                        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setIsDark(isDarkMode);
+      document.documentElement.classList.toggle("dark", isDarkMode);
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -23,6 +29,7 @@ const ThemeToggle = () => {
       size="icon"
       onClick={toggleTheme}
       className="relative h-10 w-16 rounded-full bg-muted p-1 transition-colors hover:bg-muted/80"
+      aria-label="Toggle theme"
     >
       <div
         className={`absolute inset-0 flex w-full items-center duration-200 ease-in-out ${

@@ -45,10 +45,10 @@ const Index = () => {
               <ThemeToggle />
               <div className="hidden md:flex items-center gap-2">
                 <Button variant="ghost" className="text-white hover:bg-white/10" asChild>
-                  <a href="/auth/login">Talk to an expert</a>
+                  <a href="/auth/login">Login</a>
                 </Button>
                 <Button className="bg-primary hover:bg-primary/90 text-white" asChild>
-                  <a href="/auth/signup">Download the app</a>
+                  <a href="/auth/signup">Signup</a>
                 </Button>
               </div>
               <div className="block md:hidden">
@@ -75,15 +75,21 @@ const Index = () => {
                 <Button 
                   size="lg"
                   className="bg-white text-background hover:bg-white/90 px-8 text-sm font-medium"
+                  asChild
                 >
-                  <Download className="mr-2 h-4 w-4" /> Download the app
+                  <a href="/auth/signup">
+                    <Download className="mr-2 h-4 w-4" /> Download the app
+                  </a>
                 </Button>
                 <Button 
                   size="lg"
                   variant="outline" 
                   className="border-white/20 text-white hover:bg-white/10 px-8 text-sm font-medium"
+                  asChild
                 >
-                  Talk to an expert
+                  <a href="/auth/login">
+                    Login
+                  </a>
                 </Button>
               </div>
             </div>
@@ -325,15 +331,21 @@ const Index = () => {
             <Button 
               size="lg"
               className="bg-white text-background hover:bg-white/90 px-8"
+              asChild
             >
-              <Download className="mr-2 h-4 w-4" /> Download the app
+              <a href="/auth/signup">
+                <Download className="mr-2 h-4 w-4" /> Sign up now
+              </a>
             </Button>
             <Button 
               size="lg"
               variant="outline" 
               className="border-white/20 text-white hover:bg-white/10 px-8"
+              asChild
             >
-              Talk to an expert
+              <a href="/auth/login">
+                Login
+              </a>
             </Button>
           </div>
         </div>
